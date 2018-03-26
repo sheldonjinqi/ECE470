@@ -5,15 +5,6 @@ from scipy.linalg import expm, logm
 from numpy.linalg import inv, norm
 import random 
 
-def combine_matrix(m):
-    """
-    Combines a list of matricies into a single numpy matrix
-    Essentially stacks every row of the input list into a numpy matrix,
-    then stacks all the rows vertically.
-    :param m: The list of lists to convert
-    """
-    return np.vstack([np.hstack(row) for row in m])
-
 def skew(v):
     return np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
 
@@ -23,45 +14,8 @@ def invskew(v):
 def bracket4(v):
     return np.block([ [skew(v[0:3, :]), v[3:6, :]],[ 0,0,0,0] ])   
 
-def bracket(v):
-    """
-    Returns the 'bracket' operator of a 3x1 vector or 6x1 twist
-    :param v: the 3x1 vector or 6x1 twist, can be of type list or numpy.ndarray - Must be convertible to a numpy array!
-    :returns: a 3x3 or 4x4 numpy array based on the input matrix or an empty list otherwise
-    """
-    v = np.asarray(v)
-    rtn = []
-    if(v.shape == (6,1)):
-        rtn =   [[ bracket(v[:3]),  v[3:]   ],
-                 [ np.zeros((1,4))          ]]
-        rtn = combine_matrix(rtn)
-    elif(v.shape == (3,1)):
-        rtn = np.zeros((3,3))
-        rtn[0][1] = - v[2]
-        rtn[0][2] =   v[1]
-        rtn[1][2] = - v[0]
-        rtn = rtn - rtn.transpose()
-    return rtn
-
-def fromPose(T):
-    """
-    Returns a rotation matrix and position vector from a 4x4 HCT matrix
-    :param T: The 4x4 HCT matrix as either python lists or numpy array
-    :returns: a tuple with the first element being a 3x3 numpy array representing the rotation matrix
-              and the second element being a 3x1 numpy array position vector
-    """
-    T = np.asarray(T)
-    return (T[:3,:3], T[:3, 3:4])    
 
 def adt(T):
-    """
-    Returns the adjoint transformation matrix of T
-    :param T: the pose whose 6x6 adjoint matrix to return
-    """
-    rot, pos = fromPose(T)
-    return combine_matrix([[ rot,                   np.zeros((3,3)) ],
-                           [ bracket(pos).dot(rot), rot             ]])
-def adts(T):
     """
     Returns the adjoint transformation matrix of T
     :param T: the pose whose 6x6 adjoint matrix to return
